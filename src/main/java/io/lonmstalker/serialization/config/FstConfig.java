@@ -14,7 +14,8 @@ import java.io.OutputStream;
 
 // models must be serializable
 // need use --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED
-// --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED
+// --add-opens java.base/java.util=ALL-UNNAMED --add-opens
+// java.base/java.util.concurrent=ALL-UNNAMED
 // --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED
 // --add-opens java.sql/java.sql=ALL-UNNAMED
 
@@ -39,9 +40,30 @@ public class FstConfig {
   }
 
   @Bean
+  public Serializer<JavaModel> unsafeFstSerializer(
+      @Qualifier("unsafeFstConfiguration") final FSTConfiguration fstConfiguration) {
+    return this.createFstSerializer(fstConfiguration);
+  }
+
+  @Bean
+  public Deserializer<JavaModel> unsafeFstDeserializer(
+      @Qualifier("unsafeFstConfiguration") final FSTConfiguration fstConfiguration) {
+    return this.createFstDeserializer(fstConfiguration);
+  }
+
+  @Bean
   public Serializer<JavaModel> fstSerializer(
-      @Qualifier("fstConfiguration") final FSTConfiguration fstConfiguration,
-      @Qualifier("unsafeFstConfiguration") final FSTConfiguration unsafeFstConfiguration) {
+      @Qualifier("fstConfiguration") final FSTConfiguration fstConfiguration) {
+    return this.createFstSerializer(fstConfiguration);
+  }
+
+  @Bean
+  public Deserializer<JavaModel> fstDeserializer(
+      @Qualifier("fstConfiguration") final FSTConfiguration fstConfiguration) {
+    return this.createFstDeserializer(fstConfiguration);
+  }
+
+  public Serializer<JavaModel> createFstSerializer(final FSTConfiguration fstConfiguration) {
     return new Serializer<>() {
       @Override
       public void serialize(final JavaModel object, final OutputStream outputStream)
@@ -51,15 +73,12 @@ public class FstConfig {
 
       @Override
       public byte[] serializeToByteArray(final JavaModel object) {
-        return unsafeFstConfiguration.asByteArray(object);
+        return fstConfiguration.asByteArray(object);
       }
     };
   }
 
-  @Bean
-  public Deserializer<JavaModel> fstDeserializer(
-      @Qualifier("fstConfiguration") final FSTConfiguration fstConfiguration,
-      @Qualifier("unsafeFstConfiguration") final FSTConfiguration unsafeFstConfiguration) {
+  public Deserializer<JavaModel> createFstDeserializer(final FSTConfiguration fstConfiguration) {
     return new Deserializer<>() {
 
       @Override
@@ -74,7 +93,7 @@ public class FstConfig {
       @Override
       public JavaModel deserializeFromByteArray(final byte[] serialized) {
         try {
-          return (JavaModel) unsafeFstConfiguration.asObject(serialized);
+          return (JavaModel) fstConfiguration.asObject(serialized);
         } catch (Exception e) {
           throw new RuntimeException(e);
         }

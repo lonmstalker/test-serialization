@@ -1,10 +1,10 @@
-package io.lonmstalker.serialization;
+package io.lonmstalker.serialization.benchmark;
 
 import org.junit.Test;
-import org.openjdk.jmh.results.format.ResultFormatType;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
+import org.openjdk.jmh.runner.options.TimeValue;
 
 public abstract class AbstractBenchmark {
 
@@ -13,14 +13,13 @@ public abstract class AbstractBenchmark {
     final var opt =
         new OptionsBuilder()
             .include("\\." + this.getClass().getSimpleName() + "\\.")
-            .warmupIterations(2)
+            .warmupTime(TimeValue.seconds(1))
+            .warmupIterations(3)
             .measurementIterations(3)
-            .forks(0)
-            .threads(1)
+            .forks(1)
+            .threads(3)
             .shouldDoGC(true)
             .shouldFailOnError(true)
-            .resultFormat(ResultFormatType.JSON)
-            .result("/dev/null")
             .build();
     new Runner(opt).run();
   }

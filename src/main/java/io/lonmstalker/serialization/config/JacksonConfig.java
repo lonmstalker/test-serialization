@@ -1,6 +1,7 @@
 package io.lonmstalker.serialization.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import io.lonmstalker.serialization.model.JavaModel;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +26,11 @@ public class JacksonConfig {
     return new ObjectMapper();
   }
 
+  @Bean("smileObjectMapper")
+  public ObjectMapper smileObjectMapper() {
+    return new ObjectMapper(new SmileFactory()).findAndRegisterModules();
+  }
+
   @Bean
   public Serializer<JavaModel> jacksonSerializer(
       @Qualifier("objectMapper") final ObjectMapper objectMapper) {
@@ -32,8 +38,14 @@ public class JacksonConfig {
   }
 
   @Bean
-  public Serializer<JavaModel> jacksonSmileSerializer(
+  public Serializer<JavaModel> jacksonAfterburnerSerializer(
       @Qualifier("fullObjectMapper") final ObjectMapper objectMapper) {
+    return createSerializer(objectMapper);
+  }
+
+  @Bean
+  public Serializer<JavaModel> jacksonSmileSerializer(
+      @Qualifier("smileObjectMapper") final ObjectMapper objectMapper) {
     return createSerializer(objectMapper);
   }
 
@@ -45,6 +57,12 @@ public class JacksonConfig {
 
   @Bean
   public Deserializer<JavaModel> jacksonSmileDeserializer(
+      @Qualifier("smileObjectMapper") final ObjectMapper objectMapper) {
+    return createDeserializer(objectMapper);
+  }
+
+  @Bean
+  public Deserializer<JavaModel> jacksonAfterburnerDeserializer(
       @Qualifier("fullObjectMapper") final ObjectMapper objectMapper) {
     return createDeserializer(objectMapper);
   }
