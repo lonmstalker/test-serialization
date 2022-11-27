@@ -10,9 +10,6 @@ import org.springframework.core.serializer.Serializer;
 @UtilityClass
 public class BenchmarkUtils {
 
-  public final Pair<Serializer<JavaModel>, Deserializer<JavaModel>> BSON =
-      BenchmarkUtils.createBson();
-
   public final Pair<Serializer<JavaModel>, Deserializer<JavaModel>> FST =
       BenchmarkUtils.createFst();
 
@@ -33,12 +30,6 @@ public class BenchmarkUtils {
 
   public final Pair<Serializer<JavaModel>, Deserializer<JavaModel>> ONE_NIO =
       BenchmarkUtils.createOneNio();
-
-  public Pair<Serializer<JavaModel>, Deserializer<JavaModel>> createBson() {
-    final var bsonConfig = new BsonConfig();
-    final var bsonCodec = bsonConfig.codecProvider();
-    return Pair.of(bsonConfig.bsonSerializer(bsonCodec), bsonConfig.bsonDeserializer(bsonCodec));
-  }
 
   public Pair<Serializer<JavaModel>, Deserializer<JavaModel>> createFst() {
     final var fstConfig = new FstConfig();

@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-// models must be serializable
+// models must be serializable, non thread safe
 // need use --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED
 // --add-opens java.base/java.util=ALL-UNNAMED --add-opens
 // java.base/java.util.concurrent=ALL-UNNAMED
@@ -31,6 +31,7 @@ public class FstConfig {
     return config;
   }
 
+  // unsupported android
   @Bean
   public FSTConfiguration unsafeFstConfiguration() {
     final var config = FSTConfiguration.createUnsafeBinaryConfiguration();
@@ -93,7 +94,8 @@ public class FstConfig {
       @Override
       public JavaModel deserializeFromByteArray(final byte[] serialized) {
         try {
-          return (JavaModel) fstConfiguration.asObject(serialized);
+          return (JavaModel)
+              fstConfiguration.getObjectInput(serialized).readObject(JavaModel.class);
         } catch (Exception e) {
           throw new RuntimeException(e);
         }

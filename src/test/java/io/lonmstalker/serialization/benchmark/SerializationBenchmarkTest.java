@@ -15,13 +15,8 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 public class SerializationBenchmarkTest extends AbstractBenchmark {
 
-  @Param({"5", "10", "50", "100"})
+  @Param({"5"})
   public int countElements;
-
-  @Benchmark
-  public void bson_serialize() throws IOException {
-    TestUtils.testSerialization(countElements, BenchmarkUtils.BSON.getKey());
-  }
 
   @Benchmark
   public void kryo_serialize() throws IOException {

@@ -16,7 +16,6 @@
         <lombok-plugin.version>1.18.20.0</lombok-plugin.version>
 
         <jackson.version>2.14.0</jackson.version>
-        <bson.version>4.8.0</bson.version>
         <kryo.version>5.3.0</kryo.version>
         <fst.version>3.0.4-jdk17</fst.version>
         <one-nio.version>1.5.0</one-nio.version>
@@ -82,12 +81,6 @@
         </dependency>
 
         <!-- ANOTHER -->
-        <!--        exists reactive implementation-->
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>bson</artifactId>
-            <version>${bson.version}</version>
-        </dependency>
         <dependency>
             <groupId>com.esotericsoftware</groupId>
             <artifactId>kryo</artifactId>
@@ -125,6 +118,8 @@
                         --add-opens=java.base/java.net=ALL-UNNAMED
                         --add-opens=java.base/java.text=ALL-UNNAMED
                         --add-opens=java.sql/java.sql=ALL-UNNAMED
+                        --add-opens java.base/sun.nio.ch=ALL-UNNAMED
+                        --add-opens=java.base/java.nio=ALL-UNNAMED
                     </argLine>
                 </configuration>
             </plugin>

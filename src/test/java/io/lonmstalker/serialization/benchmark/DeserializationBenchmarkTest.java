@@ -15,46 +15,41 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 public class DeserializationBenchmarkTest extends AbstractBenchmark {
 
-  @Param({"5", "10", "50", "100"})
+  @Param({"5"})
   public int countElements;
 
   @Benchmark
-  public void bson_serialize() throws IOException {
-    TestUtils.testDeserialization(countElements, BenchmarkUtils.BSON);
-  }
-
-  @Benchmark
-  public void kryo_serialize() throws IOException {
+  public void kryo_deserialize() throws IOException {
     TestUtils.testDeserialization(countElements, BenchmarkUtils.KRYO);
   }
 
   @Benchmark
-  public void one_nio_serialize() throws IOException {
+  public void one_nio_deserialize() throws IOException {
     TestUtils.testDeserialization(countElements, BenchmarkUtils.ONE_NIO);
   }
 
   @Benchmark
-  public void fst_serialize() throws IOException {
+  public void fst_deserialize() throws IOException {
     TestUtils.testDeserialization(countElements, BenchmarkUtils.FST);
   }
 
   @Benchmark
-  public void fst_unsafe_serialize() throws IOException {
+  public void fst_unsafe_deserialize() throws IOException {
     TestUtils.testDeserialization(countElements, BenchmarkUtils.UNSAFE_FST);
   }
 
   @Benchmark
-  public void jackson_serialize() throws IOException {
+  public void jackson_deserialize() throws IOException {
     TestUtils.testDeserialization(countElements, BenchmarkUtils.JACKSON);
   }
 
   @Benchmark
-  public void afterburner_jackson_serialize() throws IOException {
+  public void afterburner_jackson_deserialize() throws IOException {
     TestUtils.testDeserialization(countElements, BenchmarkUtils.FULL_JACKSON);
   }
 
   @Benchmark
-  public void smile_jackson_serialize() throws IOException {
+  public void smile_jackson_deserialize() throws IOException {
     TestUtils.testDeserialization(countElements, BenchmarkUtils.SMILE_JACKSON);
   }
 }

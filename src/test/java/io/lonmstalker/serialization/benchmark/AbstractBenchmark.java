@@ -17,7 +17,7 @@ public abstract class AbstractBenchmark {
             .warmupIterations(3)
             .measurementIterations(3)
             .forks(1)
-            .threads(3)
+            .threads(1)
             .shouldDoGC(true)
             .shouldFailOnError(true)
             .build();
