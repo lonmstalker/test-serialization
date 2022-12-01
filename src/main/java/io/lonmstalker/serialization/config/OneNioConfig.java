@@ -12,6 +12,7 @@ import org.springframework.core.serializer.Serializer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 // https://github.com/odnoklassniki/one-nio/blob/2d7fddc1e9af2738f08700c64909ecd3c350f8a3/test/one/nio/serial/SerializationTest.java#L46
 @Configuration(proxyBeanMethods = false)
@@ -23,18 +24,12 @@ public class OneNioConfig {
       @Override
       public void serialize(final JavaModel object, final OutputStream outputStream)
           throws IOException {
-        try (final var out = new PersistStream()) {
-          out.writeChars(Json.toJson(object));
-          outputStream.write(out.toByteArray());
-        }
+        outputStream.write(Json.toJson(object).getBytes(StandardCharsets.UTF_8));
       }
 
       @Override
       public byte[] serializeToByteArray(final JavaModel object) throws IOException {
-        try (final var out = new PersistStream()) {
-          out.writeChars(Json.toJson(object));
-          return out.toByteArray();
-        }
+        return Json.toJson(object).getBytes(StandardCharsets.UTF_8);
       }
     };
   }

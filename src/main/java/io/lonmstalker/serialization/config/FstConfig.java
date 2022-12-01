@@ -1,6 +1,7 @@
 package io.lonmstalker.serialization.config;
 
 import io.lonmstalker.serialization.model.JavaModel;
+import io.lonmstalker.serialization.serializer.ImmutableCollectionSerializer;
 import org.nustaq.serialization.FSTConfiguration;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -11,6 +12,7 @@ import org.springframework.core.serializer.Serializer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 
 // models must be serializable, non thread safe
 // need use --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED
@@ -22,11 +24,14 @@ import java.io.OutputStream;
 // https://www.alibabacloud.com/blog/an-introduction-and-comparison-of-several-common-java-serialization-frameworks_597900
 @Configuration(proxyBeanMethods = false)
 public class FstConfig {
+  final ImmutableCollectionSerializer serializer = new ImmutableCollectionSerializer();
 
   @Bean
   public FSTConfiguration fstConfiguration() {
     final var config = FSTConfiguration.createJsonConfiguration();
     config.registerClass(JavaModel.class);
+    config.registerSerializer(List.of().getClass(), serializer, true);
+    config.registerSerializer(List.of(1, 2, 3).getClass(), serializer, true);
     config.setShareReferences(false);
     return config;
   }
@@ -34,8 +39,11 @@ public class FstConfig {
   // unsupported android
   @Bean
   public FSTConfiguration unsafeFstConfiguration() {
+    //    final var config = FSTConfiguration.createUnsafeBinaryConfiguration();
     final var config = FSTConfiguration.createUnsafeBinaryConfiguration();
     config.registerClass(JavaModel.class);
+    config.registerSerializer(List.of().getClass(), serializer, true);
+    config.registerSerializer(List.of(1, 2, 3).getClass(), serializer, true);
     config.setShareReferences(false);
     return config;
   }
@@ -86,7 +94,7 @@ public class FstConfig {
       public JavaModel deserialize(final InputStream inputStream) {
         try {
           return (JavaModel) fstConfiguration.decodeFromStream(inputStream);
-        } catch (Exception e) {
+        } catch (final Exception e) {
           throw new RuntimeException(e);
         }
       }
@@ -94,9 +102,8 @@ public class FstConfig {
       @Override
       public JavaModel deserializeFromByteArray(final byte[] serialized) {
         try {
-          return (JavaModel)
-              fstConfiguration.getObjectInput(serialized).readObject(JavaModel.class);
-        } catch (Exception e) {
+          return (JavaModel) fstConfiguration.asObject(serialized);
+        } catch (final Exception e) {
           throw new RuntimeException(e);
         }
       }

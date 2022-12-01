@@ -2,7 +2,7 @@ package io.lonmstalker.serialization.config;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.ByteBufferInput;
-import com.esotericsoftware.kryo.unsafe.UnsafeByteBufferOutput;
+import com.esotericsoftware.kryo.io.ByteBufferOutput;
 import com.esotericsoftware.kryo.util.DefaultInstantiatorStrategy;
 import com.esotericsoftware.kryo.util.Pool;
 import io.lonmstalker.serialization.model.JavaModel;
@@ -14,7 +14,6 @@ import org.springframework.core.serializer.Serializer;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 
 // kryo not thread safe, in real project use ThreadLocal
 // --add-opens java.base/java.util=ALL-UNNAMED
@@ -42,45 +41,27 @@ public class KryoConfig {
 
   @Bean
   public Serializer<JavaModel> kryoSerializer(final Pool<Kryo> kryo) {
-    var output =
-        new Pool<UnsafeByteBufferOutput>(true, false, Runtime.getRuntime().availableProcessors()) {
-          @Override
-          protected UnsafeByteBufferOutput create() {
-            return new UnsafeByteBufferOutput(1024, -1);
-          }
-        };
     return new Serializer<>() {
       @Override
       public void serialize(JavaModel object, OutputStream outputStream) {
         Kryo kryoObtain = null;
-        UnsafeByteBufferOutput outputObtain = null;
-        try {
+        try (final var buffer = new ByteBufferOutput(outputStream)) {
           kryoObtain = kryo.obtain();
-          outputObtain = output.obtain();
-
-          outputObtain.reset();
-          outputObtain.setOutputStream(outputStream);
-          kryoObtain.writeClassAndObject(outputObtain, object);
+          kryoObtain.writeClassAndObject(buffer, object);
         } finally {
           kryo.free(kryoObtain);
-          output.free(outputObtain);
         }
       }
 
       @Override
-      public byte[] serializeToByteArray(JavaModel object) {
+      public byte[] serializeToByteArray(final JavaModel object) {
         Kryo kryoObtain = null;
-        UnsafeByteBufferOutput outputObtain = null;
-        try {
+        try (final var buffer = new ByteBufferOutput(4096, -1)) {
           kryoObtain = kryo.obtain();
-          outputObtain = output.obtain();
-
-          outputObtain.reset();
-          kryoObtain.writeClassAndObject(outputObtain, object);
-          return outputObtain.toBytes();
+          kryoObtain.writeObjectOrNull(buffer, object, JavaModel.class);
+          return buffer.toBytes();
         } finally {
           kryo.free(kryoObtain);
-          output.free(outputObtain);
         }
       }
     };
@@ -88,45 +69,26 @@ public class KryoConfig {
 
   @Bean
   public Deserializer<JavaModel> kryoDeserializer(final Pool<Kryo> kryo) {
-    var input =
-        new Pool<ByteBufferInput>(true, false, Runtime.getRuntime().availableProcessors()) {
-          @Override
-          protected ByteBufferInput create() {
-            return new ByteBufferInput(1024);
-          }
-        };
     return new Deserializer<>() {
       @Override
       public JavaModel deserialize(InputStream inputStream) {
         Kryo kryoObtain = null;
-        ByteBufferInput inputObtain = null;
         try {
           kryoObtain = kryo.obtain();
-          inputObtain = input.obtain();
-          inputObtain.setInputStream(inputStream);
-          return (JavaModel) kryoObtain.readClassAndObject(inputObtain);
+          return kryoObtain.readObjectOrNull(new ByteBufferInput(inputStream), JavaModel.class);
         } finally {
           kryo.free(kryoObtain);
-          input.free(inputObtain);
         }
       }
 
       @Override
       public JavaModel deserializeFromByteArray(final byte[] serialized) {
         Kryo kryoObtain = null;
-        ByteBufferInput inputObtain = null;
         try {
-          final var buffer = ByteBuffer.allocateDirect(serialized.length);
-
           kryoObtain = kryo.obtain();
-          inputObtain = input.obtain();
-          buffer.put(serialized);
-
-          inputObtain.setBuffer(buffer);
-          return (JavaModel) kryoObtain.readClassAndObject(inputObtain);
+          return kryoObtain.readObjectOrNull(new ByteBufferInput(serialized), JavaModel.class);
         } finally {
           kryo.free(kryoObtain);
-          input.free(inputObtain);
         }
       }
     };
